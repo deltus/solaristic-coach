@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'preact/hooks';
 import { AGE_GROUPS } from '../../config/coaching';
-import { CUSTOM_SPORT_ID, MAX_ON_FIELD, onFieldChoices, sportById, SPORTS, teamSport } from '../../config/sports';
+import { CUSTOM_SPORT_ID, onFieldChoices, sportById, SPORTS, teamSport } from '../../config/sports';
 import * as svc from '../../services';
 import type { Team } from '../../types';
 import { Card, Page, sure } from '../components';
@@ -43,7 +43,7 @@ export function TeamForm({ teamId }: { teamId?: string }) {
   const custom = sportId === CUSTOM_SPORT_ID;
   const base = sportById(sportId);
   const sport = teamSport(sportId, { onField, periods, periodMinutes });
-  const choices = custom ? Array.from({ length: MAX_ON_FIELD }, (_, i) => i + 1) : onFieldChoices(sportId);
+  const choices = onFieldChoices(custom ? CUSTOM_SPORT_ID : sportId);
 
   async function save(e: Event) {
     e.preventDefault();

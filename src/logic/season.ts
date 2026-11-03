@@ -1,9 +1,10 @@
-// Season numbers per player (games, minutes, positions, attendance, ratings, notes), the
+// Season numbers per player (games, minutes, positions, attendance, checks, old ratings, notes), the
 // "who needs attention" list (adapted from Radar's need ranking: here it's fair game time and
 // coach attention), and the parents' group team list (first names only).
 
 import type { Sport } from '../config/sports';
-import type { Attendance, Player, Rating, Stint, Team, TeamEvent } from '../types';
+import type { AbsentReason, Attendance, Check, Player, Rating, Stint, Team, TeamEvent } from '../types';
+import { isPresent } from './checks';
 import { positionsByPlayer } from './gameTime';
 import type { PlayerHistory } from './lineup';
 
@@ -13,6 +14,7 @@ export interface SeasonData {
   attendance: Attendance[];
   stints: Stint[];
   ratings: Rating[];
+  checks: Check[];
 }
 
 export interface PlayerSeason {
@@ -20,14 +22,18 @@ export interface PlayerSeason {
   games: number;
   trainings: number;
   late: number;
+  /** Sessions missed, for any reason. */
   away: number;
+  absentFor: Partial<Record<AbsentReason, number>>;
   /** Attendance rate over closed events with a record, 0–1. */
   attendanceRate: number;
   minutesMs: number;
   byPosition: Map<string, number>;
   byRole: Map<string, number>;
-  /** Per area: [great, needs work]. */
+  /** Round 1 ratings per area: [great, needs work]. */
   ratings: Map<string, [number, number]>;
+  /** Post-session checks: all good, stars, notes, and how often each chip was ticked. */
+  checks: { good: number; star: number; note: number; chips: Map<string, number> };
   notes: { date: string; note: string }[];
   /** Fraction of the game time they could have had (0–1), over games they attended. */
   shareOfAvailable: number;
@@ -46,7 +52,7 @@ export function seasonStats(d: SeasonData, sport: Sport): PlayerSeason[] {
   const gameLength = new Map(
     closedEvents.filter((e) => e.kind === 'game').map((e) => [e.id, (e.clock?.done ?? []).reduce((a, b) => a + b, 0)])
   );
-  const attended = (a: Attendance) => a.status !== 'away';
+  const attended = (a: Attendance) => isPresent(a);
 
   return d.players.map((player) => {
     const att = d.attendance.filter((a) => a.playerId === player.id && eventById.has(a.eventId));
@@ -66,17 +72,26 @@ export function seasonStats(d: SeasonData, sport: Sport): PlayerSeason[] {
       if (r.note) notes.push({ date: d.events.find((e) => e.id === r.eventId)?.date ?? '', note: r.note });
     }
     notes.sort((a, b) => a.date.localeCompare(b.date));
+    const checks = { good: 0, star: 0, note: 0, chips: new Map<string, number>() };
+    for (const c of d.checks.filter((x) => x.playerId === player.id && eventById.has(x.eventId))) {
+      checks[c.verdict]++;
+      for (const chip of c.chips) checks.chips.set(chip, (checks.chips.get(chip) ?? 0) + 1);
+    }
+    const absentFor: PlayerSeason['absentFor'] = {};
+    for (const a of att) if (a.status === 'absent') absentFor[a.reason ?? 'away'] = (absentFor[a.reason ?? 'away'] ?? 0) + 1;
     return {
       player,
       games: games.length,
       trainings: trainings.length,
       late: att.filter((a) => a.status === 'late').length,
-      away: att.filter((a) => a.status === 'away').length,
+      away: att.filter((a) => !attended(a)).length,
+      absentFor,
       attendanceRate: att.length ? att.filter(attended).length / att.length : 0,
       minutesMs,
       byPosition: posMap,
       byRole: byRole.get(player.id) ?? new Map(),
       ratings,
+      checks,
       notes,
       shareOfAvailable: possible ? minutesMs / possible : 0
     };
@@ -120,15 +135,17 @@ export function needsAttention(stats: PlayerSeason[], d: SeasonData, sport: Spor
       score += 2;
     }
     const awayRecent = recent.filter((e) =>
-      d.attendance.some((a) => a.eventId === e.id && a.playerId === s.player.id && a.status === 'away')
+      d.attendance.some((a) => a.eventId === e.id && a.playerId === s.player.id && !isPresent(a))
     ).length;
     if (awayRecent >= 2) {
-      reasons.push(`Away ${awayRecent} of the last ${recent.length}`);
+      reasons.push(`Missed ${awayRecent} of the last ${recent.length}`);
       score += 1;
     }
-    const rated = recent.some((e) => d.ratings.some((r) => r.eventId === e.id && r.playerId === s.player.id));
-    if (recent.length >= 2 && !rated && awayRecent < recent.length) {
-      reasons.push('Not rated lately');
+    const seen = (e: TeamEvent) =>
+      d.checks.some((c) => c.eventId === e.id && c.playerId === s.player.id) ||
+      d.ratings.some((r) => r.eventId === e.id && r.playerId === s.player.id);
+    if (recent.length >= 2 && !recent.some(seen) && awayRecent < recent.length) {
+      reasons.push('Not checked lately');
       score += 1;
     }
     if (reasons.length) out.push({ playerId: s.player.id, reasons, score });

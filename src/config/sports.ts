@@ -2,11 +2,17 @@
 // the field shape and the usual junior game length. Coaches can override the numbers per team.
 // Positions have a `role` (e.g. defence, midfield) so fair rotation can balance the kinds of
 // positions a player gets, not just the exact spot. x/y are percentages across/down the drawing,
-// with the team attacking towards the top.
+// with the team attacking towards the top. Each sport also has a skill list (5–8 skills) used for
+// a training session's focus and, later, player profiles. Team sizes run from 4 to 15.
 
 export type FieldShape = 'pitch' | 'oval' | 'court' | 'netball' | 'cricket';
 
 export interface Role {
+  id: string;
+  label: string;
+}
+
+export interface Skill {
   id: string;
   label: string;
 }
@@ -30,11 +36,22 @@ export interface Sport {
   formats?: Record<number, string[]>;
   roles: Role[];
   positions: Position[];
+  /** 5–8 skills a coach looks at for this sport. Ids are stored, so keep them. */
+  skills: Skill[];
   periods: number;
   periodName: string;
   /** Usual junior period length in minutes. */
   periodMinutes: number;
 }
+
+const skills = (...labels: string[]): Skill[] =>
+  labels.map((label) => ({
+    id: label
+      .toLowerCase()
+      .replace(/[^a-z]+/g, '-')
+      .replace(/-$/, ''),
+    label
+  }));
 
 const p = (id: string, label: string, short: string, role: string, x: number, y: number): Position => ({ id, label, short, role, x, y });
 
@@ -43,7 +60,9 @@ export const SPORTS: Sport[] = [
     id: 'afl',
     name: 'Australian rules football',
     field: 'oval',
-    onField: 18,
+    /** The full game is 18 a side; juniors play 12–15, so 15 is the most this app offers. */
+    onField: 15,
+    skills: skills('Kicking', 'Handballing', 'Marking', 'Ground balls', 'Tackling', 'Running and spreading', 'Decision making'),
     roles: [
       { id: 'back', label: 'Back' },
       { id: 'mid', label: 'Midfield' },
@@ -82,6 +101,7 @@ export const SPORTS: Sport[] = [
     name: 'Soccer',
     field: 'pitch',
     onField: 11,
+    skills: skills('Passing', 'First touch', 'Dribbling', 'Shooting', 'Defending', 'Positioning', 'Goalkeeping'),
     roles: [
       { id: 'gk', label: 'Goalkeeper' },
       { id: 'def', label: 'Defence' },
@@ -112,10 +132,35 @@ export const SPORTS: Sport[] = [
     periodMinutes: 25
   },
   {
+    id: 'futsal',
+    name: 'Futsal',
+    field: 'pitch',
+    onField: 5,
+    skills: skills('Passing', 'Close control', 'Shooting', 'Defending', 'Movement off the ball', 'Goalkeeping'),
+    roles: [
+      { id: 'gk', label: 'Goalkeeper' },
+      { id: 'def', label: 'Defence' },
+      { id: 'wing', label: 'Wing' },
+      { id: 'fwd', label: 'Pivot' }
+    ],
+    positions: [
+      p('piv', 'Pivot', 'PIV', 'fwd', 50, 18),
+      p('lw', 'Left wing', 'LW', 'wing', 22, 46),
+      p('rw', 'Right wing', 'RW', 'wing', 78, 46),
+      p('fixo', 'Defender (fixo)', 'DEF', 'def', 50, 70),
+      p('gk', 'Goalkeeper', 'GK', 'gk', 50, 92)
+    ],
+    formats: { 4: ['piv', 'lw', 'rw', 'fixo'] },
+    periods: 2,
+    periodName: 'Half',
+    periodMinutes: 20
+  },
+  {
     id: 'netball',
     name: 'Netball',
     field: 'netball',
     onField: 7,
+    skills: skills('Passing', 'Catching', 'Footwork', 'Shooting', 'Defending', 'Getting free', 'Court awareness'),
     roles: [
       { id: 'shoot', label: 'Shooting' },
       { id: 'centre', label: 'Centre court' },
@@ -140,6 +185,7 @@ export const SPORTS: Sport[] = [
     name: 'Basketball',
     field: 'court',
     onField: 5,
+    skills: skills('Dribbling', 'Passing', 'Shooting', 'Defence', 'Rebounding', 'Court awareness'),
     roles: [
       { id: 'guard', label: 'Guard' },
       { id: 'forward', label: 'Forward' },
@@ -162,6 +208,7 @@ export const SPORTS: Sport[] = [
     name: 'Cricket',
     field: 'cricket',
     onField: 11,
+    skills: skills('Batting', 'Bowling', 'Fielding', 'Catching', 'Throwing', 'Wicketkeeping'),
     roles: [
       { id: 'bowl', label: 'Bowling' },
       { id: 'keep', label: 'Keeping' },
@@ -191,6 +238,7 @@ export const SPORTS: Sport[] = [
     name: 'Hockey',
     field: 'pitch',
     onField: 11,
+    skills: skills('Passing', 'Receiving', 'Dribbling', 'Shooting', 'Tackling', 'Positioning'),
     roles: [
       { id: 'gk', label: 'Goalkeeper' },
       { id: 'def', label: 'Defence' },
@@ -230,11 +278,16 @@ export interface SportOverrides {
 export const CUSTOM_SPORT_ID = 'custom';
 
 const periodNameFor = (n: number) => (n === 2 ? 'Half' : n === 3 ? 'Third' : n === 4 ? 'Quarter' : 'Period');
-export const MAX_ON_FIELD = 20;
+export const MIN_ON_FIELD = 4;
+export const MAX_ON_FIELD = 15;
+const clampOnField = (n: number, most = MAX_ON_FIELD) => Math.max(MIN_ON_FIELD, Math.min(most, Math.round(n)));
+
+/** Skills for a custom sport. */
+export const CUSTOM_SKILLS = skills('Ball skills', 'Passing', 'Attacking', 'Defending', 'Game awareness');
 
 /** A generic sport made from the coach's numbers: positions P1…Pn spread over a plain field. */
 export function customSport(onField = 6, periods = 2, periodMinutes = 20): Sport {
-  const n = Math.max(1, Math.min(MAX_ON_FIELD, Math.round(onField)));
+  const n = clampOnField(onField);
   const cols = Math.ceil(Math.sqrt(n));
   const rows = Math.ceil(n / cols);
   const positions = Array.from({ length: n }, (_, i) => {
@@ -250,6 +303,7 @@ export function customSport(onField = 6, periods = 2, periodMinutes = 20): Sport
     onField: n,
     roles: [{ id: 'any', label: 'Any' }],
     positions,
+    skills: CUSTOM_SKILLS,
     periods,
     periodName: periodNameFor(periods),
     periodMinutes
@@ -262,7 +316,7 @@ export const sportById = (id: string): Sport | undefined => SPORTS.find((s) => s
 export function teamSport(sportId: string, o: SportOverrides = {}): Sport {
   const base = sportById(sportId);
   if (!base) return customSport(o.onField, o.periods, o.periodMinutes);
-  const onField = Math.max(1, Math.min(base.positions.length, o.onField ?? base.onField));
+  const onField = clampOnField(o.onField ?? base.onField, Math.min(MAX_ON_FIELD, base.positions.length));
   const ids = base.formats?.[onField] ?? base.positions.slice(0, onField).map((x) => x.id);
   return {
     ...base,
@@ -277,6 +331,8 @@ export function teamSport(sportId: string, o: SportOverrides = {}): Sport {
 /** Player counts a team can choose for a sport (its junior formats plus the full game). */
 export function onFieldChoices(sportId: string): number[] {
   const s = sportById(sportId);
-  if (!s) return Array.from({ length: MAX_ON_FIELD }, (_, i) => i + 1);
-  return [...new Set([...Object.keys(s.formats ?? {}).map(Number), s.onField])].sort((a, b) => a - b);
+  if (!s) return Array.from({ length: MAX_ON_FIELD - MIN_ON_FIELD + 1 }, (_, i) => i + MIN_ON_FIELD);
+  return [...new Set([...Object.keys(s.formats ?? {}).map(Number), s.onField])]
+    .filter((n) => n >= MIN_ON_FIELD && n <= MAX_ON_FIELD)
+    .sort((a, b) => a - b);
 }

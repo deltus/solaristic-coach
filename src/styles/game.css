@@ -279,7 +279,7 @@
   right: 14px;
 }
 .swipe-stamp.up {
-  color: var(--muted);
+  color: #9a7300;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -339,7 +339,7 @@
   background: rgba(230, 150, 30, 0.72);
 }
 .swipe-wash.up {
-  background: rgba(120, 128, 140, 0.6);
+  background: rgba(214, 160, 20, 0.78);
 }
 @keyframes washIn {
   to {

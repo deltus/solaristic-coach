@@ -4,7 +4,8 @@
 
 import Dexie, { type Table } from 'dexie';
 import { dbName } from './preview';
-import type { Attendance, DrillUse, Player, Rating, Settings, Stint, Team, TeamEvent } from './types';
+import { upgradeAttendanceRow } from './logic/checks';
+import type { Attendance, Check, DrillUse, Player, Rating, Settings, Stint, Team, TeamEvent, VoiceNote } from './types';
 
 export class CoachDB extends Dexie {
   teams!: Table<Team, string>;
@@ -14,6 +15,8 @@ export class CoachDB extends Dexie {
   stints!: Table<Stint, string>;
   ratings!: Table<Rating, string>;
   drillUses!: Table<DrillUse, string>;
+  checks!: Table<Check, string>;
+  voiceNotes!: Table<VoiceNote, string>;
   settings!: Table<Settings, string>;
 
   constructor(name = dbName()) {
@@ -29,11 +32,33 @@ export class CoachDB extends Dexie {
       drillUses: 'id, eventId, teamId, drillId',
       settings: 'key'
     });
+    // v2 (round 2): post-session checks and voice notes. Absences get a reason; round 1's
+    // 'away' rows become absent with reason 'away'. Nothing is deleted.
+    this.version(2)
+      .stores({
+        checks: 'id, eventId, teamId, playerId, [eventId+playerId]',
+        voiceNotes: 'id, eventId, teamId, playerId'
+      })
+      .upgrade((tx) => tx.table('attendance').toCollection().modify(upgradeAttendanceRow));
   }
 }
 
 /** Every table that goes into a backup. */
-export const TABLES = ['teams', 'players', 'events', 'attendance', 'stints', 'ratings', 'drillUses', 'settings'] as const;
+export const TABLES = [
+  'teams',
+  'players',
+  'events',
+  'attendance',
+  'stints',
+  'ratings',
+  'drillUses',
+  'checks',
+  'voiceNotes',
+  'settings'
+] as const;
+
+/** Tables that belong to one session (deleted with it). */
+export const EVENT_TABLES = ['attendance', 'stints', 'ratings', 'drillUses', 'checks', 'voiceNotes'] as const;
 
 export let db = new CoachDB();
 

@@ -5,7 +5,8 @@
 //   #/team/<id>/season     minutes and positions  #/team/<id>/summary  printable season summary
 //   #/team/<id>/builder    team builder           #/team/<id>/drills   drills library
 //   #/event/<id>           a session or game      #/event/<id>/lineup  line-up editor
-//   #/event/<id>/live      game time and subs     #/event/<id>/rate    quick ratings
+//   #/event/<id>/live      game time and subs     #/event/<id>/rate    post-session check
+//   #/event/<id>/log       log something now (#/event/<id>/log/live returns to the game)
 //   #/settings             backup, restore, privacy
 
 import { useRoute } from './hooks';
@@ -16,7 +17,8 @@ import { Squad } from './screens/Squad';
 import { EventScreen } from './screens/EventScreen';
 import { LineupScreen } from './screens/LineupScreen';
 import { LiveGame } from './screens/LiveGame';
-import { RateScreen } from './screens/RateScreen';
+import { CheckScreen } from './screens/CheckScreen';
+import { LogNow } from './screens/LogNow';
 import { SeasonView } from './screens/SeasonView';
 import { SeasonSummary } from './screens/SeasonSummary';
 import { TeamBuilder } from './screens/TeamBuilder';
@@ -38,7 +40,8 @@ function Screen({ route }: { route: string[] }) {
   if (a === 'event' && id) {
     if (sub === 'lineup') return <LineupScreen eventId={id} />;
     if (sub === 'live') return <LiveGame eventId={id} />;
-    if (sub === 'rate') return <RateScreen eventId={id} />;
+    if (sub === 'rate') return <CheckScreen eventId={id} />;
+    if (sub === 'log') return <LogNow eventId={id} from={extra} />;
     return <EventScreen eventId={id} />;
   }
   if (a === 'settings') return <SettingsScreen />;

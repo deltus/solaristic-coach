@@ -81,7 +81,7 @@ export function SeasonView({ teamId }: { teamId: string }) {
                   })}
                 </div>
                 <span class="tiny muted">
-                  {s.games} games · {s.trainings} trainings · {s.away} away{s.late ? ` · ${s.late} late` : ''}
+                  {s.games} games · {s.trainings} trainings · {s.away} missed{s.late ? ` · ${s.late} late` : ''}
                   {attention.has(s.player.id) && ` · ${attention.get(s.player.id)!.reasons[0]}`}
                 </span>
               </div>

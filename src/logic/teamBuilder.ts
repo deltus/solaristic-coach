@@ -4,7 +4,7 @@
 // a little noise, so each tap gives a different but still balanced split.
 
 import { RATING_WINDOW } from '../config/coaching';
-import type { Rating } from '../types';
+import type { Check, Rating } from '../types';
 import { shuffle } from './random';
 
 export interface BuilderPlayer {
@@ -15,11 +15,30 @@ export interface BuilderPlayer {
   role: string;
 }
 
-/** Average of the latest ratings (all areas), newest RATING_WINDOW only. */
-export function strengthFrom(ratings: Rating[], window = RATING_WINDOW): number {
-  const recent = [...ratings].sort((a, b) => b.at - a.at).slice(0, window);
-  const vals = recent.flatMap((r) => Object.values(r.scores));
-  return vals.length ? vals.reduce((a: number, b) => a + b, 0) / vals.length : 0;
+/** What a post-session check says about how a player is going (-1 … 1). Round 3 adds real skill ratings. */
+function checkValue(c: Check): number {
+  let v = c.verdict === 'star' ? 1 : 0;
+  if (c.chips.includes('nailed-drill')) v += 0.5;
+  if (c.chips.includes('standout-effort')) v += 0.5;
+  if (c.chips.includes('struggled-drill')) v -= 0.5;
+  if (c.chips.includes('low-energy') || c.chips.includes('switched-off')) v -= 0.25;
+  return Math.max(-1, Math.min(1, v));
+}
+
+/**
+ * Average of the latest sessions (round 1 ratings and round 2 checks together), newest
+ * RATING_WINDOW only. 0 when there's nothing yet.
+ */
+export function strengthFrom(ratings: Rating[], checks: Check[] = [], window = RATING_WINDOW): number {
+  const items = [
+    ...ratings.map((r) => ({ at: r.at, vals: Object.values(r.scores) as number[] })),
+    ...checks.map((c) => ({ at: c.at, vals: [checkValue(c)] }))
+  ];
+  const vals = items
+    .sort((a, b) => b.at - a.at)
+    .slice(0, window)
+    .flatMap((x) => x.vals);
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
 }
 
 export function teamCost(teams: BuilderPlayer[][]): number {

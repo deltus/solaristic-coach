@@ -26,7 +26,7 @@ export const sportOf = (team: Pick<Team, 'sportId' | 'overrides'>): Sport => tea
 
 /** Deletes a team and everything recorded for it. */
 export async function deleteTeam(id: string) {
-  const tables = [db.players, db.events, db.attendance, db.stints, db.ratings, db.drillUses];
+  const tables = [db.players, db.events, db.attendance, db.stints, db.ratings, db.drillUses, db.checks, db.voiceNotes];
   await db.transaction('rw', [db.teams, ...tables], async () => {
     for (const t of tables) await t.where('teamId').equals(id).delete();
     await db.teams.delete(id);
@@ -72,7 +72,10 @@ export async function removePlayer(id: string) {
     .filter((a) => a.playerId === id)
     .count();
   const used =
-    attended || (await db.stints.where('playerId').equals(id).count()) || (await db.ratings.where('playerId').equals(id).count());
+    attended ||
+    (await db.stints.where('playerId').equals(id).count()) ||
+    (await db.ratings.where('playerId').equals(id).count()) ||
+    (await db.checks.where('playerId').equals(id).count());
   if (used) await db.players.update(id, { active: false });
   else await db.players.delete(id);
 }

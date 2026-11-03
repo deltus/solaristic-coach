@@ -11,7 +11,9 @@ import { ageBand } from '../src/config/coaching';
 describe('sport templates', () => {
   it('every template is complete and consistent', () => {
     for (const s of SPORTS) {
-      expect(s.positions.length).toBe(s.onField);
+      // AFL lists all 18 spots but offers at most 15 a side (MAX_ON_FIELD), via its 15 format.
+      expect(s.positions.length).toBeGreaterThanOrEqual(s.onField);
+      expect(teamSport(s.id).positions).toHaveLength(s.onField);
       expect(new Set(s.positions.map((p) => p.id)).size).toBe(s.positions.length);
       for (const p of s.positions) expect(s.roles.map((r) => r.id)).toContain(p.role);
       for (const [n, ids] of Object.entries(s.formats ?? {})) {
@@ -91,7 +93,7 @@ describe('team builder', () => {
   });
   it('strength comes from recent ratings', () => {
     const r = (at: number, v: 1 | -1) => ({ id: `${at}`, eventId: 'e', teamId: 't', playerId: 'p', scores: { effort: v, skills: v }, at });
-    expect(strengthFrom([r(1, -1), r(2, 1), r(3, 1)], 2)).toBe(1);
+    expect(strengthFrom([r(1, -1), r(2, 1), r(3, 1)], [], 2)).toBe(1);
     expect(strengthFrom([])).toBe(0);
   });
   it('manual swaps and moves', () => {

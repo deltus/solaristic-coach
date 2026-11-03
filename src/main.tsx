@@ -7,6 +7,7 @@ import './styles/base.css';
 import './styles/controls.css';
 import './styles/screens.css';
 import './styles/game.css';
+import './styles/checks.css';
 import { App } from './ui/App';
 import { PREVIEW } from './preview';
 import { PreviewBanner } from './ui/PreviewBanner';

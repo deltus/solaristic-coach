@@ -21,3 +21,15 @@ Each technical choice and why, for a future developer. Newest at the bottom.
 15. **Season summary is a printable HTML page** (browser Print / Save as PDF) rather than a PDF library, to keep the bundle small. Marked "coach only".
 16. **Seeded random** (`src/logic/random.ts`) for the demo data and shuffles, so tests and the demo are repeatable.
 17. **`Team.kind` field from day one** so PE teacher mode can add `'class'` without a new table or migration.
+
+## Round 2
+
+18. **The roll starts with everyone "here"** (rows made when a session opens). Juniors mostly turn up, so the coach taps only the two or three who are missing or late. A player added after the session opened shows "Not marked" with a one-tap fix.
+19. **Absences have a reason** (sick / injured / away / no-show) stored as `status: 'absent'` + `reason`, not as separate statuses. "Was the player there?" stays one check (`isPresent`), and patterns in round 3 can still tell a no-show from a sick day. Round 1's `away` is upgraded in place (database v2) and in old backups.
+20. **One check per player per session replaces three rating cards.** Left = all good, up = star, right = note with chips. 12 swipes instead of 36, and chips say what actually happened, which is what patterns and profiles need. Round 1 ratings are kept and still count in the team builder and season summary.
+21. **A quick swipe never wipes logged chips.** "Log now" during a session adds chips; swiping "all good" afterwards keeps them as a note (`combineCheck`). Losing an injury note to a fast thumb would be worse than an extra tap.
+22. **Chips have a tone (good / amber / red) and a `safety` flag** in config, so the season dots and patterns (round 3) and the safety-officer prompt don't need a hard-coded list.
+23. **Voice notes are stored on the device as an ArrayBuffer** (not a Blob) so they copy cleanly into tests and into backups (as base64 inside the encrypted file). 30 seconds max, one per player per session. Nothing is transcribed or sent anywhere.
+24. **The training focus is a skill from the sport's skill list** (not a drill), so "nailed drill" / "struggled with drill" can later count towards that skill on the player's profile.
+25. **Team sizes 4–15.** AFL keeps all 18 spots in its template (for drawings and preferences) but offers 12 or 15 a side. A team saved with more than 15 is shown as 15.
+26. **The printed season summary leaves out wellbeing and injury chips.** It's coach-only, but a printout or PDF can travel; those stay in the app.

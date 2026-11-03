@@ -1,4 +1,4 @@
-// Coach-only ratings after a session or game, drill use with its track record, and the season
+// Round 1's coach-only ratings (kept for old data), drill use with its track record, and the season
 // data loader used by the season view, the summary, Fair rotation and the team builder.
 
 import { db, newId } from '../db';
@@ -46,13 +46,14 @@ export const drillUsesForTeam = (teamId: string) => db.drillUses.where('teamId')
 
 /** Everything the season view needs for one team. Inactive players are included (their history counts). */
 export async function loadSeason(teamId: string): Promise<SeasonData> {
-  const [players, events, attendance, stints, ratings] = await Promise.all([
+  const [players, events, attendance, stints, ratings, checks] = await Promise.all([
     db.players.where('teamId').equals(teamId).toArray(),
     db.events.where('teamId').equals(teamId).toArray(),
     db.attendance.where('teamId').equals(teamId).toArray(),
     db.stints.where('teamId').equals(teamId).toArray(),
-    db.ratings.where('teamId').equals(teamId).toArray()
+    db.ratings.where('teamId').equals(teamId).toArray(),
+    db.checks.where('teamId').equals(teamId).toArray()
   ]);
   players.sort((a, b) => a.firstName.localeCompare(b.firstName));
-  return { players, events, attendance, stints, ratings };
+  return { players, events, attendance, stints, ratings, checks };
 }

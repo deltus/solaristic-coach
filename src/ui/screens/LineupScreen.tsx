@@ -3,20 +3,21 @@
 // the season, and shows who could sit out each period. Adapted from Radar's seating plan editor.
 
 import { useRef, useState } from 'preact/hooks';
+import { isPresent } from '../../logic/checks';
 import { benchPlan, fairRotation, placeInLineup, removeFromLineup } from '../../logic/lineup';
 import { historyFrom, seasonStats } from '../../logic/season';
 import { byName, minutes } from '../../lib/format';
 import * as svc from '../../services';
-import type { Player } from '../../types';
+import type { Attendance, Player } from '../../types';
 import { Card, Page } from '../components';
 import { Field } from '../Field';
 import { useLive } from '../hooks';
 import { useDragDrop } from '../dragDrop';
 
 /** Players who can play: marked here or late, or the whole squad if attendance isn't taken yet. */
-export function availablePlayers(players: Player[], att: { playerId: string; status: string }[]): Player[] {
+export function availablePlayers(players: Player[], att: Attendance[]): Player[] {
   if (!att.length) return players;
-  const ok = new Set(att.filter((a) => a.status !== 'away').map((a) => a.playerId));
+  const ok = new Set(att.filter(isPresent).map((a) => a.playerId));
   return players.filter((p) => ok.has(p.id));
 }
 

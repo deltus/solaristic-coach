@@ -193,8 +193,13 @@ export function LiveGame({ eventId }: { eventId: string }) {
 
       {clock?.finished && (
         <button class="btn primary big" onClick={() => svc.closeEvent(eventId).then(() => go(`event/${eventId}/rate`))}>
-          Close the game and rate players
+          Close the game and check players
         </button>
+      )}
+      {!ev.closedAt && (
+        <a class="btn log-now" href={`#/event/${eventId}/log/live`}>
+          ＋ Log now
+        </a>
       )}
     </Page>
   );

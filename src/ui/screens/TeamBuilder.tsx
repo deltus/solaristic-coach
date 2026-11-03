@@ -29,14 +29,17 @@ export function TeamBuilder({ teamId }: { teamId: string }) {
   const players = season.players.filter((p) => p.active).sort(byName);
   const byId = new Map(players.map((p) => [p.id, p]));
   // Who's sitting out: the coach's choice, or whoever is marked away at an open session.
-  const sitting = out ?? new Set(att.filter((a) => a.status === 'away').map((a) => a.playerId));
+  const sitting = out ?? new Set(att.filter((a) => a.status === 'absent').map((a) => a.playerId));
   const playing = players.filter((p) => !sitting.has(p.id));
   const roleOf = (posId?: string) => sport.positions.find((p) => p.id === posId)?.role ?? 'any';
 
   function build(nextSeed = seed, k = count) {
     const pool = playing.map((p) => ({
       id: p.id,
-      strength: strengthFrom(season!.ratings.filter((r) => r.playerId === p.id)),
+      strength: strengthFrom(
+        season!.ratings.filter((r) => r.playerId === p.id),
+        season!.checks.filter((c) => c.playerId === p.id)
+      ),
       role: roleOf(p.positions[0])
     }));
     setTeams(balanceTeams(pool, k, seeded(nextSeed), nextSeed === 1 ? 0 : 0.4).map((t) => t.map((p) => p.id)));
@@ -105,7 +108,7 @@ export function TeamBuilder({ teamId }: { teamId: string }) {
             🔀 Shuffle
           </button>
         </div>
-        <p class="tiny muted">Balanced on your recent ratings and players’ preferred positions. Ratings are never shown here.</p>
+        <p class="tiny muted">Balanced on your recent session checks and players’ preferred positions. Your notes are never shown here.</p>
       </Card>
 
       {teams && (

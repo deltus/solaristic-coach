@@ -1,14 +1,15 @@
-// A training session or game: one-tap attendance, game details and score, drills used (training),
-// and closing it when it's done (then straight on to quick ratings), like Radar's lessons.
+// A training session or game: the roll, game details and score, the training focus and drills,
+// a "Log now" button for things that happen during the session, and closing it when it's done
+// (then straight on to the post-session check), like Radar's lessons.
 
 import { useState } from 'preact/hooks';
-import { ATTENDANCE } from '../../config/coaching';
 import { DRILLS } from '../../config/drills';
-import { niceDate, byName } from '../../lib/format';
+import { niceDate } from '../../lib/format';
 import * as svc from '../../services';
-import type { AttendanceStatus, TeamEvent } from '../../types';
-import { Card, Page, PlayerLine, Segmented, sure } from '../components';
+import type { TeamEvent } from '../../types';
+import { Card, Page, Segmented, sure } from '../components';
 import { go, useLive } from '../hooks';
+import { Roll } from '../Roll';
 
 function GameDetails({ ev }: { ev: TeamEvent }) {
   const [opp, setOpp] = useState(ev.opponent ?? '');
@@ -71,6 +72,31 @@ function GameDetails({ ev }: { ev: TeamEvent }) {
   );
 }
 
+/** Training only: one skill from the sport's list to focus on today (optional). */
+function Focus({ ev }: { ev: TeamEvent }) {
+  const team = useLive(() => svc.getTeam(ev.teamId), [ev.teamId]);
+  if (!team) return null;
+  const skills = svc.sportOf(team).skills;
+  return (
+    <Card>
+      <h3>Today’s focus</h3>
+      <p class="tiny muted">Optional. Pick the skill this session works on.</p>
+      <div class="chips">
+        {skills.map((k) => (
+          <button
+            type="button"
+            class={`chip ${ev.focus === k.id ? 'on' : ''}`}
+            aria-pressed={ev.focus === k.id}
+            onClick={() => svc.updateEvent(ev.id, { focus: ev.focus === k.id ? undefined : k.id })}
+          >
+            {k.label}
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function Drills({ ev }: { ev: TeamEvent }) {
   const uses = useLive(() => svc.drillsUsedIn(ev.id), [ev.id]);
   if (!uses) return null;
@@ -108,14 +134,8 @@ export function EventScreen({ eventId }: { eventId: string }) {
   const players = useLive(async () => (ev ? svc.listPlayers(ev.teamId) : []), [ev?.teamId]);
   const att = useLive(() => svc.attendanceFor(eventId), [eventId]);
   if (!ev || !players || !att) return null;
-  const status = new Map(att.map((a) => [a.playerId, a.status]));
-  const sorted = [...players].sort(byName);
-  const counts = { here: 0, late: 0, away: 0 };
-  for (const a of att) counts[a.status]++;
   const game = ev.kind === 'game';
   const closed = !!ev.closedAt;
-
-  const tap = (playerId: string, s: AttendanceStatus) => svc.setAttendance(eventId, playerId, status.get(playerId) === s ? null : s);
 
   async function close() {
     if (game && ev!.clock && !ev!.clock.finished && !sure('The game clock is still going. End the game and close it?')) return;
@@ -146,50 +166,16 @@ export function EventScreen({ eventId }: { eventId: string }) {
         </div>
       )}
       {game && <GameDetails ev={ev} />}
+      {!game && <Focus ev={ev} />}
 
-      <Card>
-        <div class="row-head">
-          <h3>Attendance</h3>
-          <span class="small muted">
-            {counts.here} here · {counts.late} late · {counts.away} away
-          </span>
-        </div>
-        {sorted.map((p) => (
-          <PlayerLine player={p}>
-            <div class="att">
-              {ATTENDANCE.map((a) => (
-                <button
-                  class={`att-btn ${a.id} ${status.get(p.id) === a.id ? 'on' : ''}`}
-                  onClick={() => tap(p.id, a.id)}
-                  aria-pressed={status.get(p.id) === a.id}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          </PlayerLine>
-        ))}
-        {att.length < players.length && (
-          <button
-            class="btn ghost"
-            onClick={() =>
-              svc.markRestHere(
-                eventId,
-                players.map((p) => p.id)
-              )
-            }
-          >
-            Mark everyone else here
-          </button>
-        )}
-      </Card>
+      <Roll eventId={eventId} players={players} att={att} />
 
       {!game && <Drills ev={ev} />}
 
       {closed ? (
         <>
           <a class="btn primary big" href={`#/event/${eventId}/rate`}>
-            Rate players
+            Check players
           </a>
           <button class="btn ghost" onClick={() => svc.reopenEvent(eventId)}>
             Reopen
@@ -197,12 +183,17 @@ export function EventScreen({ eventId }: { eventId: string }) {
         </>
       ) : (
         <button class="btn primary big" onClick={close}>
-          Close {game ? 'game' : 'session'}
+          Close {game ? 'game' : 'session'} and check players
         </button>
       )}
       <button class="btn danger-ghost" onClick={remove}>
         Delete
       </button>
+      {!closed && (
+        <a class="btn log-now" href={`#/event/${eventId}/log`}>
+          ＋ Log now
+        </a>
+      )}
     </Page>
   );
 }

@@ -10,15 +10,18 @@ export function ageBand(ageGroup: string): AgeBand {
   return n <= 8 ? 'U6-U8' : 'U9-U12';
 }
 
-/** Quick rating areas after a session or game (swipe right = great, left = needs work, up = skip). */
+/** Round 1's quick rating areas. Still read from old data (season summary, team builder). */
 export const RATING_AREAS = [
   { id: 'effort', label: 'Effort' },
   { id: 'skills', label: 'Skills' },
   { id: 'teamwork', label: 'Teamwork' }
 ];
 
-/** Swipe direction for "great". Same idea as Radar's SWIPE.goodDirection. */
-export const SWIPE = { goodDirection: 'right' as 'left' | 'right' };
+/**
+ * Swipe direction for "all good" on the check card (Radar's SWIPE.goodDirection). Swiping the
+ * other way is "something to note"; up is "star of the session". See src/config/checks.ts.
+ */
+export const SWIPE = { goodDirection: 'left' as 'left' | 'right' };
 
 /** Ratings older than this many sessions are ignored when balancing teams. */
 export const RATING_WINDOW = 6;
@@ -32,12 +35,19 @@ export const TEAM_COUNTS = [2, 3, 4];
  */
 export const SUB_GAP_MINUTES = 3;
 
-/** Attendance choices, one tap each. */
-export const ATTENDANCE = [
+/**
+ * The roll. Everyone starts as "here"; tapping a player offers these. `reason` marks an absence.
+ * Order matters: it's the order of the buttons.
+ */
+export const ROLL_CHOICES = [
   { id: 'here', label: 'Here' },
   { id: 'late', label: 'Late' },
-  { id: 'away', label: 'Away' }
+  { id: 'sick', label: 'Sick', reason: 'sick' },
+  { id: 'injured', label: 'Injured', reason: 'injured' },
+  { id: 'away', label: 'Away', reason: 'away' },
+  { id: 'noshow', label: 'No-show', reason: 'noshow' }
 ] as const;
+export type RollChoice = (typeof ROLL_CHOICES)[number]['id'];
 
 /** Close-the-session reminder: an event left open longer than this shows a banner on Home. */
 export const OPEN_TOO_LONG_HOURS = 4;

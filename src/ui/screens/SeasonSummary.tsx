@@ -1,8 +1,10 @@
-// Printable season summary per player: games, minutes, positions, attendance, ratings and coach
-// notes. Marked "coach only"; it's for the coach's own records (print or save as PDF), not for
-// sharing with parents, and injury notes will never be included.
+// Printable season summary per player: games, minutes, positions, attendance (with reasons),
+// post-session checks, round 1 ratings and coach notes. Marked "coach only"; it's for the coach's
+// own records (print or save as PDF), not for sharing with parents. Wellbeing and injury chips are
+// left out on purpose, because a printout can travel.
 
-import { RATING_AREAS } from '../../config/coaching';
+import { chipById } from '../../config/checks';
+import { RATING_AREAS, ROLL_CHOICES } from '../../config/coaching';
 import { record, seasonStats } from '../../logic/season';
 import { minutes, niceDate, playerName } from '../../lib/format';
 import * as svc from '../../services';
@@ -58,7 +60,17 @@ export function SeasonSummary({ teamId }: { teamId: string }) {
                 <td>{s.trainings}</td>
                 <th>Attendance</th>
                 <td>
-                  {Math.round(s.attendanceRate * 100)}% · {s.late} late · {s.away} away
+                  {Math.round(s.attendanceRate * 100)}% · {s.late} late · {s.away} missed
+                  {s.away > 0 && (
+                    <span class="muted">
+                      {' '}
+                      (
+                      {Object.entries(s.absentFor)
+                        .map(([r, n]) => `${n} ${ROLL_CHOICES.find((c) => c.id === r)?.label.toLowerCase() ?? r}`)
+                        .join(', ')}
+                      )
+                    </span>
+                  )}
                 </td>
               </tr>
               <tr>
@@ -81,14 +93,34 @@ export function SeasonSummary({ teamId }: { teamId: string }) {
                 </td>
               </tr>
               <tr>
-                <th>Ratings</th>
+                <th>Checks</th>
                 <td colSpan={3}>
-                  {RATING_AREAS.map((a) => {
-                    const [g, w] = s.ratings.get(a.id) ?? [0, 0];
-                    return `${a.label}: ${g} great, ${w} needs work`;
-                  }).join(' · ')}
+                  {s.checks.good} all good · {s.checks.star} star{s.checks.star === 1 ? '' : 's'} · {s.checks.note} noted
+                  {s.checks.chips.size > 0 && (
+                    <span class="muted">
+                      {' '}
+                      (
+                      {[...s.checks.chips.entries()]
+                        .filter(([id]) => !chipById(id)?.safety)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([id, n]) => `${(chipById(id)?.label ?? id).replace(/…$/, '')} ×${n}`)
+                        .join(', ')}
+                      )
+                    </span>
+                  )}
                 </td>
               </tr>
+              {s.ratings.size > 0 && (
+                <tr>
+                  <th>Ratings</th>
+                  <td colSpan={3}>
+                    {RATING_AREAS.map((a) => {
+                      const [g, w] = s.ratings.get(a.id) ?? [0, 0];
+                      return `${a.label}: ${g} great, ${w} needs work`;
+                    }).join(' · ')}
+                  </td>
+                </tr>
+              )}
               {s.notes.length > 0 && (
                 <tr>
                   <th>Notes</th>
@@ -106,7 +138,10 @@ export function SeasonSummary({ teamId }: { teamId: string }) {
           </table>
         </section>
       ))}
-      <p class="tiny muted">Made with Solaristic Coach on the coach’s own device. Ratings and notes are the coach’s private notes.</p>
+      <p class="tiny muted">
+        Made with Solaristic Coach on the coach’s own device. Checks, ratings and notes are the coach’s private notes. Wellbeing and injury
+        notes are never printed.
+      </p>
     </main>
   );
 }

@@ -1,4 +1,5 @@
-// A card you can swipe: right = great, left = needs work, up = skip. Buttons and arrow keys do
+// A card you can swipe: 'good' one way and 'issue' the other (SWIPE.goodDirection), 'up' up.
+// On the check card that is left = all good, right = note, up = star. Buttons and arrow keys do
 // the same through `control.fling`. Adapted from Radar's src/ui/Swipe.tsx (same fly-off "ghost"
 // animation and colour wash; saves never wait for the animation).
 
@@ -14,7 +15,7 @@ export interface SwipeControl {
 }
 
 const DRAG_START = 8;
-const WASH_ICON: Record<SwipeAction, string> = { good: '★', issue: '↻', up: '↑' };
+const WASH_ICON: Record<SwipeAction, string> = { good: '✓', issue: '✎', up: '★' };
 
 export const sideOf = (a: 'good' | 'issue'): 'left' | 'right' => ((a === 'good') === (SWIPE.goodDirection === 'right') ? 'right' : 'left');
 const actionFor = (side: 'left' | 'right'): 'good' | 'issue' => (side === sideOf('good') ? 'good' : 'issue');

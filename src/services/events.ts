@@ -1,9 +1,12 @@
-// Training sessions and games: open, edit, close (like Radar's lessons), and one-tap attendance.
+// Training sessions and games: open, edit, close (like Radar's lessons), and the roll. When a
+// session opens, every active player starts as "here"; the coach only taps who's missing or late.
 
-import { db, newId } from '../db';
+import type { RollChoice } from '../config/coaching';
+import { db, EVENT_TABLES, newId } from '../db';
+import { attendanceFor as rowFor } from '../logic/checks';
 import { closeAll, gameMs, pauseClock } from '../logic/gameTime';
 import { today } from '../lib/format';
-import type { AttendanceStatus, EventKind, TeamEvent } from '../types';
+import type { EventKind, TeamEvent } from '../types';
 
 export type GameDetails = Pick<TeamEvent, 'opponent' | 'venue' | 'gameType'>;
 
@@ -16,7 +19,11 @@ export async function openEvent(teamId: string, kind: EventKind, details: GameDe
     openedAt: Date.now(),
     ...(kind === 'game' ? { venue: 'home' as const, gameType: 'competition' as const, scoreFor: 0, scoreAgainst: 0, ...details } : {})
   };
-  await db.events.add(ev);
+  const players = (await db.players.where('teamId').equals(teamId).toArray()).filter((p) => p.active);
+  await db.transaction('rw', db.events, db.attendance, async () => {
+    await db.events.add(ev);
+    await db.attendance.bulkAdd(players.map((p) => ({ id: newId(), eventId: ev.id, teamId, playerId: p.id, status: 'here' as const })));
+  });
   return ev;
 }
 
@@ -47,7 +54,7 @@ export async function closeEvent(id: string, now = Date.now()) {
 export const reopenEvent = (id: string) => db.events.update(id, { closedAt: undefined });
 
 export async function deleteEvent(id: string) {
-  const tables = [db.attendance, db.stints, db.ratings, db.drillUses];
+  const tables = EVENT_TABLES.map((t) => db.table(t));
   await db.transaction('rw', [db.events, ...tables], async () => {
     for (const t of tables) await t.where('eventId').equals(id).delete();
     await db.events.delete(id);
@@ -64,16 +71,16 @@ export async function openEvents(): Promise<TeamEvent[]> {
   return (await db.events.toArray()).filter((e) => !e.closedAt);
 }
 
-/** One tap: here, late or away. Tapping the same status again clears it. */
-export async function setAttendance(eventId: string, playerId: string, status: AttendanceStatus | null) {
+/** Sets one player on the roll: here, late, or absent with a reason. null clears it (not marked). */
+export async function setAttendance(eventId: string, playerId: string, choice: RollChoice | null) {
   const ev = await db.events.get(eventId);
   if (!ev) return;
   const existing = await db.attendance.where('[eventId+playerId]').equals([eventId, playerId]).first();
-  if (!status) {
+  if (!choice) {
     if (existing) await db.attendance.delete(existing.id);
     return;
   }
-  await db.attendance.put({ id: existing?.id ?? newId(), eventId, teamId: ev.teamId, playerId, status });
+  await db.attendance.put({ id: existing?.id ?? newId(), eventId, teamId: ev.teamId, playerId, ...rowFor(choice) });
 }
 
 /** Marks everyone without a status as here (the "All here" button). */

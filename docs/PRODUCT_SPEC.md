@@ -9,6 +9,18 @@ Working name "Solaristic Coach". A team and squad manager for junior sport coach
 
 It must work for any team sport: squads of 4–5 up to 15+, with positions and field shapes set per sport in config.
 
+## The target (from round 2 on)
+
+The core loop: about 60 seconds of tapping after each session builds player profiles; the profiles let the app draft line-ups and divisions; the coach adjusts and locks them in. The full target (areas A–E and privacy) and the order of rounds 2–7 are in `docs/prompts/round2.md`.
+
+**Round 2 (built):**
+- **The roll:** everyone starts as here; tap a player for late, sick, injured, away or no-show.
+- **Post-session check:** one card per player who came. Swipe left = all good, up = star, right = something to note with chips (effort, behaviour, skill, wellbeing, social, "conflict with" a player). Optional voice note. Game cards show minutes and positions. No typing.
+- **Log now** during a session or game; the chips appear on that player's card afterwards.
+- **Safety prompt** ("Report this to your club's child safety officer") for "seemed upset" and "knock or injury".
+- **Sports:** futsal added; every sport has a skill list (5–8); a training can have a skill focus; team sizes 4–15.
+- Round 1 data is upgraded, not wiped. Round 1 ratings still count.
+
 ## Round 1 (all on the device)
 
 1. **Sports and teams**

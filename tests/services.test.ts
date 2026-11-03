@@ -105,19 +105,24 @@ describe('ratings', () => {
 });
 
 describe('demo data', () => {
-  it('has 12 players, 4 trainings and 3 games with minutes that add up', async () => {
+  it('has 12 players, 5 trainings and 4 games with minutes that add up', async () => {
     const team = await loadDemoData();
     const data = await svc.loadSeason(team.id);
     const sport = svc.sportOf(team);
     expect(data.players).toHaveLength(12);
-    expect(data.events.filter((e) => e.kind === 'training')).toHaveLength(4);
+    expect(data.events.filter((e) => e.kind === 'training')).toHaveLength(5);
     const games = data.events.filter((e) => e.kind === 'game');
-    expect(games).toHaveLength(3);
+    expect(games).toHaveLength(4);
     expect(games.filter((g) => g.gameType === 'friendly')).toHaveLength(1);
     const stats = seasonStats(data, sport);
     const total = stats.reduce((a, s) => a + s.minutesMs, 0);
-    expect(total).toBe(3 * 50 * MIN * 9);
-    expect(data.ratings.length).toBeGreaterThan(20);
+    expect(total).toBe(4 * 50 * MIN * 9);
+    // Every player who came to every session has a check.
+    const present = data.attendance.filter((a) => a.status !== 'absent');
+    expect(data.checks).toHaveLength(present.length);
+    expect(data.attendance.some((a) => a.status === 'absent' && a.reason === 'noshow')).toBe(true);
+    expect(data.checks.some((c) => c.verdict === 'star')).toBe(true);
+    expect(data.events.filter((e) => e.kind === 'training').every((e) => e.focus)).toBe(true);
     expect(Array.isArray(needsAttention(stats, data, sport))).toBe(true);
     const text = teamListText(team, data.players, sport.name);
     expect(text).toContain('#4 Mia');

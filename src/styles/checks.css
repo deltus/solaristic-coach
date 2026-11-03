@@ -1,0 +1,115 @@
+/* Solaristic Coach: the post-session check card, note chips, safety prompt and voice notes. */
+/* Round 2: the check card and note chips */
+.swipe-buttons.thumb {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(608px, calc(100% - 32px));
+  bottom: calc(var(--nav-h) + var(--safe-b) + 12px);
+  z-index: 5;
+}
+.page:has(.swipe-buttons.thumb) {
+  padding-bottom: 110px;
+}
+.swipe-buttons.thumb .btn {
+  min-height: 64px;
+  font-size: 16px;
+}
+.star-btn {
+  background: #fbf0cf;
+  border-color: #ecd48a;
+  color: #7a5a00;
+}
+.logged {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--sig-50);
+  color: var(--sig);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.chip-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.chip-group .field-label {
+  display: block;
+  margin-bottom: 6px;
+}
+.chip-sheet {
+  gap: 10px;
+}
+.chips.big-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.big-chips .chip {
+  min-height: 48px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.chip.on.tone-good {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+.chip.on.tone-amber {
+  background: var(--some);
+  border-color: var(--some);
+}
+.chip.on.tone-red {
+  background: var(--sig);
+  border-color: var(--sig);
+}
+.picker {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.safety {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--sig-50);
+  border: 1px solid #ecc3ad;
+  color: var(--sig);
+  font-weight: 650;
+}
+.sheet-actions {
+  position: sticky;
+  bottom: calc(var(--nav-h) + var(--safe-b));
+  margin: 0 -16px -16px;
+  padding: 10px 16px 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 20px 20px;
+}
+.sheet-actions .btn {
+  min-height: 56px;
+}
+.voice {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.voice-btn {
+  min-height: 48px;
+}
+.voice-btn.recording {
+  background: var(--sig);
+  border-color: var(--sig);
+  color: #fff;
+}
+.bad-text {
+  color: var(--sig);
+}

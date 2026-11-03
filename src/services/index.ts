@@ -3,4 +3,5 @@ export * from './teams';
 export * from './events';
 export * from './game';
 export * from './coaching';
+export * from './checks';
 export * from './backup';

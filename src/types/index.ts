@@ -69,9 +69,13 @@ export interface TeamEvent {
   lineup?: Record<string, string>;
   /** Training only: drills planned or used. */
   drillIds?: string[];
+  /** Training only: the skill this session focuses on (an id from the sport's skill list). */
+  focus?: string;
 }
 
-export type AttendanceStatus = 'here' | 'late' | 'away';
+/** Round 1 stored 'away'; database v2 turns that into 'absent' with reason 'away'. */
+export type AttendanceStatus = 'here' | 'late' | 'absent';
+export type AbsentReason = 'sick' | 'injured' | 'away' | 'noshow';
 
 export interface Attendance {
   id: string;
@@ -79,6 +83,8 @@ export interface Attendance {
   teamId: string;
   playerId: string;
   status: AttendanceStatus;
+  /** Only when absent. */
+  reason?: AbsentReason;
 }
 
 /** One spell on the field in one position. Times are game-clock ms from kick-off. */
@@ -96,7 +102,10 @@ export interface Stint {
 
 export type RatingValue = 1 | -1;
 
-/** Coach-only quick ratings after a session or game. Never shown to players or parents. */
+/**
+ * Round 1's quick ratings (great / needs work per area). Kept so old data still counts, but new
+ * sessions use Check instead. Coach only.
+ */
 export interface Rating {
   id: string;
   eventId: string;
@@ -105,6 +114,41 @@ export interface Rating {
   /** Area id → 1 (great) or -1 (needs work). Skipped areas are left out. */
   scores: Record<string, RatingValue>;
   note?: string;
+  at: number;
+}
+
+export type CheckVerdict = 'good' | 'star' | 'note';
+
+/**
+ * The post-session check for one player at one session: all good, star of the session, or
+ * something to note (chips from src/config/checks.ts). "Log now" during a session adds chips
+ * here too. Coach only: never shown to players or parents, never in shared exports.
+ */
+export interface Check {
+  id: string;
+  eventId: string;
+  teamId: string;
+  playerId: string;
+  verdict: CheckVerdict;
+  /** Chip ids from src/config/checks.ts. */
+  chips: string[];
+  /** For the "conflict with" chip: the other player(s). */
+  conflictWith?: string[];
+  /** True when something was logged during the session with "Log now". */
+  logged?: boolean;
+  at: number;
+}
+
+/** A short voice note about one player at one session. Stays on the device. Coach only. */
+export interface VoiceNote {
+  id: string;
+  eventId: string;
+  teamId: string;
+  playerId: string;
+  /** The recording itself (ArrayBuffer so backups and tests can copy it). */
+  data: ArrayBuffer;
+  mime: string;
+  ms: number;
   at: number;
 }
 

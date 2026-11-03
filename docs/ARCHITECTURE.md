@@ -24,24 +24,34 @@ flowchart LR
 
 - **Screens** (`src/ui/screens/`): one file per screen. Shared pieces in `src/ui/` (`components.tsx`, `Field.tsx` field drawings, `Swipe.tsx` swipe cards, `dragDrop.ts`, `hooks.ts`). Routing is a hash router in `src/ui/App.tsx` (the route list is at the top of that file).
 - **Logic** (`src/logic/`): pure functions, no database. `gameTime.ts` (clock, subs, minutes, suggestions), `lineup.ts` (Fair rotation, bench plan), `teamBuilder.ts`, `season.ts` (season numbers, who needs attention, team list), `drills.ts`, `backupCrypto.ts`, `swipe.ts`, `random.ts` (seeded).
-- **Config** (`src/config/`): `sports.ts` (templates), `coaching.ts` (age groups, rating areas, thresholds), `drills.ts` (library).
+- **Config** (`src/config/`): `sports.ts` (templates with skill lists, team sizes 4–15), `coaching.ts` (age groups, roll choices, thresholds), `checks.ts` (post-session chips), `drills.ts` (library).
 - **Services** (`src/services/`): every database read and write, re-exported by `index.ts` (`import * as svc from '../services'`).
-- **Database** (`src/db.ts`): Dexie schema (v1), `TABLES` for backups, settings helpers. `useDatabase()` swaps the instance (tests).
+- **Database** (`src/db.ts`): Dexie schema (v2), `TABLES` for backups, `EVENT_TABLES` (deleted with a session), settings helpers. `useDatabase()` swaps the instance (tests).
 - **Previews** (`src/preview.ts`): a branch build (`VITE_PREVIEW=<branch>`) gets its own database name and storage keys, and `vite.config.ts` turns the service worker off.
 - **Demo** (`src/demo.ts`): the fictional U11 soccer team, seeded so it is the same every time.
 
-## Data model (round 1)
+## Data model (database v2, round 2)
 
 | Table | What | Key fields |
 |---|---|---|
 | teams | a team for one season | name, sportId, overrides (onField, periods, periodMinutes), season, ageGroup, kind |
 | players | squad members | teamId, firstName, lastInitial, jersey?, positions[], active |
-| events | a training or a game | teamId, kind, date, openedAt, closedAt?, opponent, venue, gameType, score, clock, lineup, drillIds |
-| attendance | one tap per player per event | eventId, playerId, status (here / late / away) |
+| events | a training or a game | teamId, kind, date, openedAt, closedAt?, opponent, venue, gameType, score, clock, lineup, drillIds, focus? (training skill) |
+| attendance | the roll: one row per player per event, made as "here" when the event opens | eventId, playerId, status (here / late / absent), reason? (sick / injured / away / noshow) |
 | stints | one spell on the field in one position | eventId, playerId, positionId, period, start, end (game-clock ms) |
-| ratings | coach-only quick ratings | eventId, playerId, scores {area: 1 / -1}, note? |
+| checks | the post-session check (coach only) | eventId, playerId, verdict (good / star / note), chips[], conflictWith?, logged? |
+| voiceNotes | an optional voice note per player per event (coach only) | eventId, playerId, data (ArrayBuffer), mime, ms |
+| ratings | round 1's quick ratings, kept and still counted | eventId, playerId, scores {area: 1 / -1}, note? |
 | drillUses | a drill used at a training | eventId, drillId, result (worked / didnt) |
 | settings | one row | coachName, swipeAnimations, lastTeamId |
+
+**v1 → v2 upgrade** (`src/db.ts`): adds `checks` and `voiceNotes`; round 1 attendance `away` becomes `absent` + reason `away`. Nothing is deleted. Old backups go through the same upgrade on restore (`src/services/backup.ts`), and voice notes go into backups as base64 inside the encrypted file.
+
+## The post-session check
+
+- `src/config/checks.ts`: the chips (group, tone good / amber / red, `safety`, `pickPlayer`), swipe directions, the safety prompt text.
+- `src/logic/checks.ts`: roll choice ↔ stored row, the attendance upgrade, and `combineCheck` / `addLogged`: a quick swipe never wipes chips logged during the session ("all good" on a player with logged chips stays a note).
+- Screens: `Roll.tsx` (on the session screen), `screens/CheckScreen.tsx` (route `rate`), `ChipSheet.tsx` (chips + conflict picker + safety prompt), `VoiceNote.tsx` (MediaRecorder, 30 s max), `screens/LogNow.tsx`.
 
 ## How fair game time works
 
