@@ -1,0 +1,14 @@
+node_modules
+dist
+dev-dist
+*.log
+android/app/build
+android/.gradle
+release
+.claude
+.env.local
+.env.*.local
+
+# Backups and database snapshots may hold real player data. Never commit them.
+*.coachbackup
+samples/*.json
