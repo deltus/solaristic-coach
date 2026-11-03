@@ -1,0 +1,218 @@
+/* Buttons, inputs, chips, segmented choices, avatars, banners and the preview strip. */
+
+/* ---------- Buttons and inputs ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.btn.primary {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.btn.ghost {
+  background: transparent;
+}
+.btn.ghost.light {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.btn.big {
+  min-height: 56px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 16px;
+}
+.btn.small {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.btn.danger-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--sig);
+}
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 18px;
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
+  color: var(--ink);
+  cursor: pointer;
+  flex: none;
+}
+input:not([type='checkbox']),
+select {
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: #fff;
+}
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.field-label.narrow {
+  max-width: 96px;
+}
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+.toggle input {
+  width: 22px;
+  height: 22px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chip.on {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.chip.on.good {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+.chip.on.bad {
+  background: var(--some);
+  border-color: var(--some);
+}
+.segmented {
+  display: flex;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+.segmented button {
+  flex: 1;
+  min-height: 38px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.segmented button.on {
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(14, 26, 58, 0.12);
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--blue-50);
+  color: var(--blue-600);
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+.avatar.lg {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  font-size: 19px;
+}
+.banner {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--blue-50);
+  border: 1px solid #cdd8f7;
+  color: var(--ink);
+  text-decoration: none;
+  margin: 0;
+}
+.banner.warn {
+  background: var(--some-50);
+  border-color: #ecd9ae;
+}
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.badge.good {
+  background: var(--ok-50);
+  color: var(--ok);
+}
+.badge.bad {
+  background: var(--some-50);
+  color: var(--some);
+}
+
+/* Preview strip (src/ui/PreviewBanner.tsx), same as Radar. */
+.preview-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 6px 12px;
+  padding-top: max(6px, env(safe-area-inset-top));
+  background: #ff3ea5;
+  color: #fff;
+  font:
+    600 13px/1.3 system-ui,
+    sans-serif;
+  text-align: center;
+}
+.preview-banner button {
+  border: 1.5px solid #fff;
+  background: transparent;
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font: inherit;
+  cursor: pointer;
+}

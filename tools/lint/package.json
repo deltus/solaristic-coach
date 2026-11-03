@@ -1,0 +1,16 @@
+{
+  "name": "solaristic-coach-lint",
+  "private": true,
+  "description": "Lint and format tools only. Kept apart from the app because typescript-eslint does not support TypeScript 7 yet; this folder has its own TypeScript 6 for the linter's parser. Install with: npm ci --prefix tools/lint",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.72.1"
+  }
+}

@@ -1,0 +1,262 @@
+/* Screen-specific styles: home, team hub, attendance, season, summary (print), team builder, drills. */
+
+.welcome .btn {
+  width: 100%;
+}
+.team-card h2 {
+  margin: 2px 0;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+.stat-value {
+  font-size: 22px;
+  font-weight: 750;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.attention {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.attention:last-child {
+  border-bottom: 0;
+}
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.tool-grid a,
+.tool-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+.tool-grid span {
+  font-size: 22px;
+}
+.event-row .kind,
+.kind {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  flex: none;
+}
+.kind.game {
+  background: var(--navy);
+  color: #fff;
+}
+.score {
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Attendance: three one-tap buttons per player */
+.att {
+  display: flex;
+  gap: 4px;
+}
+.att-btn {
+  min-width: 52px;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.att-btn.here.on {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #fff;
+}
+.att-btn.late.on {
+  background: var(--some);
+  border-color: var(--some);
+  color: #fff;
+}
+.att-btn.away.on {
+  background: var(--muted);
+  border-color: var(--muted);
+  color: #fff;
+}
+.scoreboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.score-side {
+  text-align: center;
+}
+.score-ctl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.score-num {
+  font-size: 32px;
+  font-weight: 800;
+  min-width: 40px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Season view */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+}
+.legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+.season-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.season-row:last-child {
+  border-bottom: 0;
+}
+.stack {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  min-width: 4px;
+  background: var(--line);
+}
+.flag {
+  color: var(--burgundy);
+}
+
+/* Printable summary */
+.summary {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
+  background: #fff;
+}
+.summary-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.summary-player {
+  border-top: 1px solid var(--line);
+  padding: 10px 0;
+  break-inside: avoid;
+}
+.summary-player h2 {
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+.summary table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.summary th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 2px 8px 2px 0;
+  vertical-align: top;
+  width: 1%;
+  white-space: nowrap;
+}
+.summary td {
+  padding: 2px 12px 2px 0;
+  vertical-align: top;
+}
+@media print {
+  .no-print,
+  .preview-banner {
+    display: none !important;
+  }
+  body,
+  .summary {
+    background: #fff;
+  }
+  .app {
+    padding: 0;
+  }
+}
+
+/* Team builder */
+.teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.team-col {
+  gap: 6px;
+  padding: 10px;
+}
+.team-name {
+  border: 0;
+  background: none;
+  font-weight: 750;
+  font-size: 15px;
+  text-align: left;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+/* Drills */
+.drill-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.drill-body p {
+  margin-bottom: 6px;
+}

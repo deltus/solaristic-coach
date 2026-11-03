@@ -1,0 +1,348 @@
+/* Game day: the field drawing and spots, bench chips, the clock bar, sub tips, minutes table,
+   drag and drop, and the swipe rating cards (swipe styles copied from Radar). */
+
+.field {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  aspect-ratio: 100 / 140;
+}
+.field-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.slot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  border: 0;
+  background: none;
+  padding: 2px;
+  cursor: pointer;
+  color: #fff;
+  min-width: 48px;
+  touch-action: manipulation;
+}
+.slot-dot {
+  width: 38px;
+  height: 38px;
+  border-radius: 19px;
+  display: grid;
+  place-items: center;
+  font-weight: 750;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 2px dashed rgba(255, 255, 255, 0.8);
+}
+.slot.filled .slot-dot {
+  background: #fff;
+  color: var(--navy);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.slot.selected .slot-dot,
+.slot.drop-over .slot-dot {
+  background: #ffd84d;
+  color: var(--navy);
+  border-color: #ffd84d;
+  transform: scale(1.12);
+}
+.slot-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.slot-note {
+  font-size: 10.5px;
+  font-weight: 700;
+  background: rgba(14, 26, 58, 0.7);
+  border-radius: 6px;
+  padding: 0 4px;
+}
+.player-chip {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-weight: 650;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.player-chip.block {
+  width: 100%;
+  text-align: left;
+}
+.player-chip.selected {
+  background: #ffd84d;
+  border-color: #e6bd1f;
+}
+.player-chip.due {
+  border-color: var(--ok);
+  box-shadow: inset 0 0 0 1px var(--ok);
+}
+.drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 80;
+  pointer-events: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #ffd84d;
+  font-weight: 750;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+/* Clock bar */
+.clock-bar {
+  background: var(--navy);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 12px;
+  align-items: center;
+  position: sticky;
+  top: 6px;
+  z-index: 10;
+}
+.clock {
+  display: block;
+  font-family: var(--mono);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.clock-bar.over .clock {
+  color: #ffd84d;
+}
+.clock-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.clock-bar .btn.big {
+  min-height: 50px;
+  min-width: 110px;
+}
+.mini-score {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+}
+.mini-score button {
+  flex: 1;
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--ok-50);
+  border: 1px solid #cfe3dc;
+  font-size: 14px;
+}
+.minutes-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 40px;
+  align-items: center;
+  gap: 2px 8px;
+  padding: 4px 0;
+}
+.minutes-row .name {
+  font-weight: 600;
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.minutes-row .where {
+  grid-column: 2 / -1;
+}
+.bar-wrap {
+  position: relative;
+  height: 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+.bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--ok);
+  border-radius: 6px;
+}
+.bar.low {
+  background: var(--some);
+}
+.share-mark {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--navy);
+}
+.mins {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Swipe rating cards (from Radar) */
+.progress {
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+}
+.swipe-card {
+  position: relative;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  will-change: transform;
+}
+.rate-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 20px rgba(14, 26, 58, 0.07);
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rate-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.card-name {
+  font-size: 25px;
+}
+.rate-card .eyebrow {
+  font-size: 15px;
+  margin-top: 4px;
+}
+.note-input {
+  margin-top: auto;
+}
+.swipe-stamp {
+  position: absolute;
+  top: 14px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 2px solid;
+  font-weight: 800;
+  font-size: 15px;
+  text-transform: uppercase;
+  pointer-events: none;
+  background: var(--surface);
+}
+.swipe-stamp.good {
+  color: var(--ok);
+  left: 14px;
+}
+.swipe-stamp.issue {
+  color: var(--some);
+  right: 14px;
+}
+.swipe-stamp.up {
+  color: var(--muted);
+  left: 50%;
+  transform: translateX(-50%);
+}
+.good-btn {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #fff;
+}
+.issue-btn {
+  background: var(--some-50);
+  border-color: #ecd9ae;
+  color: var(--some);
+}
+.swipe-buttons .btn {
+  padding: 0 8px;
+  font-size: 14px;
+}
+.card-enter {
+  animation: cardEnter 150ms ease-out;
+}
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.swipe-ghost {
+  z-index: 60;
+  pointer-events: none;
+  overflow: hidden;
+}
+.swipe-ghost .swipe-stamp {
+  display: none;
+}
+.swipe-wash {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  animation: washIn 120ms ease-out forwards;
+  opacity: 0;
+}
+.swipe-wash span {
+  font-size: 64px;
+  font-weight: 800;
+  color: #fff;
+}
+.swipe-wash.good {
+  background: rgba(46, 160, 98, 0.72);
+}
+.swipe-wash.issue {
+  background: rgba(230, 150, 30, 0.72);
+}
+.swipe-wash.up {
+  background: rgba(120, 128, 140, 0.6);
+}
+@keyframes washIn {
+  to {
+    opacity: 1;
+  }
+}
